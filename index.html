@@ -22,9 +22,9 @@
     #previewImg { width: 100%; border-radius: 8px; border: 2px solid #fff; box-shadow: 0 5px 20px rgba(0,0,0,0.15); display: block; margin: 0 auto; max-height: 80vh; object-fit: contain; }
     .btn-save { background-color: #d32f2f; color: white; font-weight: bold; padding: 14px; border-radius: 8px; width: 100%; border: none; margin-top: 15px; font-size: 1.1rem; }
     
+    /* BẢNG THỐNG KÊ NHỎ */
     .stats-mini { position: fixed; bottom: 20px; right: 20px; background: white; padding: 12px 18px; border-radius: 50px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 1000; border: 2px solid #d32f2f; display: flex; align-items: center; gap: 10px; transition: all 0.3s; }
     .stats-mini b { color: #d32f2f; font-size: 1.2rem; }
-
     #loading { position: fixed; top:0; left:0; width:100%; height:100%; background: #fff; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
   </style>
 </head>
@@ -46,7 +46,6 @@
       <div class="card-control">
         <div class="header-box"><i class="bi bi-pencil-square"></i> Tạo thông điệp Đại hội</div>
         <div class="p-4 overflow-auto" style="max-height: 85vh;">
-          
           <div class="mb-4">
              <div class="group-label">1. Nhập thông tin</div>
              <input class="form-control mb-3" type="file" id="uploadAvatar" accept="image/*">
@@ -55,38 +54,31 @@
              <input type="text" class="form-control mb-2" id="inpLoc" placeholder="Xã/Phường - Tỉnh/Thành phố">
              <textarea class="form-control" id="inpMessage" rows="3" placeholder="Thông điệp cá nhân...">Tự hào vững bước dưới cờ Đảng quang vinh</textarea>
           </div>
-
           <div class="mb-4 bg-light p-3 rounded border">
              <div class="group-label text-primary">2. Căn chỉnh ảnh cá nhân</div>
              <label class="label-sm">Trái / Phải:</label><input type="range" id="avtX" min="-400" max="400" value="0">
              <label class="label-sm">Lên / Xuống:</label><input type="range" id="avtY" min="-400" max="400" value="0">
              <label class="label-sm">Kích thước:</label><input type="range" id="avtScale" min="0.1" max="3.0" step="0.05" value="1.0">
           </div>
-
           <div class="mb-4 bg-light p-3 rounded border">
              <div class="group-label text-danger">3. Căn chỉnh Tên/Đơn vị/Địa phương</div>
              <label class="label-sm">Di chuyển dọc:</label><input type="range" id="textY" min="-200" max="200" value="0">
           </div>
-
           <div class="mb-3 bg-light p-3 rounded border">
              <div class="group-label text-success">4. Căn chỉnh Thông điệp</div>
              <label class="label-sm">Lên / Xuống:</label><input type="range" id="msgY" min="-200" max="200" value="0">
              <label class="label-sm">Cỡ chữ:</label><input type="range" id="msgSize" min="20" max="70" value="35">
              <label class="label-sm">Độ rộng khung:</label><input type="range" id="msgWidth" min="300" max="1100" value="850">
           </div>
-
           <button onclick="downloadImage()" class="btn-save shadow"><i class="bi bi-download"></i> TẢI ẢNH KẾT QUẢ</button>
         </div>
       </div>
     </div>
-
-    <!-- CỘT PHẢI: HIỂN THỊ -->
     <div class="col-lg-8 text-center">
-       <!-- THAY ĐỔI CÂU TIÊU ĐỀ TẠI ĐÂY -->
-       <h5 class="text-danger fw-bold mb-3">
-         <i class="bi bi-heart-fill me-1"></i> Cùng Hành trình số Việt Nam My love gửi thông điệp đến Đại hội XIV của Đảng
-       </h5>
-       
+       <!-- Chữ đã được làm nhỏ lại ở dòng dưới này -->
+       <h6 class="text-danger fw-bold mb-3" style="font-size: 0.9rem;">
+         <i class="bi bi-heart-fill me-1"></i> Cùng Hành trình số Việt Nam my love gửi thông điệp đến Đại hội đại biểu toàn quốc lần thứ XIV của Đảng
+       </h6>
        <img id="previewImg" src="">
        <canvas id="myCanvas"></canvas>
     </div>
@@ -97,16 +89,17 @@
   const DRIVE_ID = "1i30MYF682b8hZvTh7hzVSPQ4lHFdvzn3";
   const BACKGROUND_URL = "https://lh3.googleusercontent.com/d/" + DRIVE_ID;
   
-  const COUNTER_NS = "thong-diep-dai-hoi-xiv-final-v1"; 
-  const COUNTER_KEY = "luot-tao";
+  // NAMESPACE MỚI - ĐẢM BẢO KHÔNG TRÙNG
+  const COUNTER_NS = "hanhtrinhsovietnam-xiv-official-2025"; 
+  const COUNTER_KEY = "global-count";
   const START_NUM = 100;
-  let currentTotal = START_NUM;
 
   const BASE = {
     avatar: { x: 476, y: 440 }, 
     name:   { x: 365, y: 720, color: "#ffff00", font: "bold 26px Roboto" }, 
     unit:   { x: 365, y: 752, color: "#ffffff", font: "italic 21px Roboto" }, 
-    loc:    { x: 365, y: 792, color: "#ffffff", font: "italic 21px Roboto" }, 
+    // Đã chỉnh y từ 795 lùi lên 780 cho cân đối
+    loc:    { x: 365, y: 780, color: "#ffffff", font: "italic 21px Roboto" }, 
     msg:    { x: 770, y: 350, color: "#002a5c", fontFace: "Dancing Script" } 
   };
 
@@ -118,14 +111,24 @@
   let userAvatar = new Image();
   let isAvatarLoaded = false;
 
+  // LẤY THỐNG KÊ
   async function loadStats() {
     try {
       const res = await fetch(`https://api.counterapi.dev/v1/${COUNTER_NS}/${COUNTER_KEY}?t=${Date.now()}`);
-      const data = await res.json();
-      currentTotal = (data.count || 0) + START_NUM;
-      document.getElementById('userCount').innerText = currentTotal.toLocaleString();
-    } catch(e) { document.getElementById('userCount').innerText = currentTotal; }
+      if (res.ok) {
+        const data = await res.json();
+        const serverCount = (data.count || 0) + START_NUM;
+        // Nếu số server lớn hơn số lưu cục bộ thì lấy số server
+        const localCount = parseInt(localStorage.getItem('my_count') || 0);
+        const finalCount = Math.max(serverCount, localCount);
+        document.getElementById('userCount').innerText = finalCount.toLocaleString();
+      }
+    } catch(e) { 
+      const localCount = parseInt(localStorage.getItem('my_count') || START_NUM);
+      document.getElementById('userCount').innerText = localCount;
+    }
   }
+
   loadStats();
 
   bgImage.onload = () => {
@@ -176,7 +179,6 @@
     const msgY = parseInt(document.getElementById('msgY').value);
     const msgSize = parseInt(document.getElementById('msgSize').value);
     const msgWidth = parseInt(document.getElementById('msgWidth').value);
-
     ctx.textAlign = "center";
     ctx.fillStyle = BASE.name.color; ctx.font = BASE.name.font; 
     ctx.fillText(name, BASE.name.x, BASE.name.y + textY);
@@ -184,7 +186,6 @@
     ctx.fillText(unit, BASE.unit.x, BASE.unit.y + textY);
     ctx.fillStyle = BASE.loc.color; ctx.font = BASE.loc.font;
     ctx.fillText(loc, BASE.loc.x, BASE.loc.y + textY);
-
     ctx.textAlign = "left"; 
     ctx.fillStyle = BASE.msg.color; ctx.font = `${msgSize}px "${BASE.msg.fontFace}"`; 
     wrapText(ctx, msg, BASE.msg.x, BASE.msg.y + msgY, msgWidth, msgSize * 1.4);
@@ -202,15 +203,26 @@
     context.fillText(line, x, y);
   }
 
+  // TẢI ẢNH VÀ CỘNG SỐ (BAO GỒM LƯU TRỮ CỤC BỘ)
   function downloadImage() {
-    currentTotal++;
-    document.getElementById('userCount').innerText = currentTotal.toLocaleString();
+    // 1. Nhảy số trên UI và lưu vào máy mình ngay
+    let currentUI = parseInt(document.getElementById('userCount').innerText.replace(/,/g, ''));
+    currentUI++;
+    document.getElementById('userCount').innerText = currentUI.toLocaleString();
+    localStorage.setItem('my_count', currentUI); // Lưu vào bộ nhớ trình duyệt
+
+    // 2. Hiệu ứng nháy
     const box = document.getElementById('statsContainer');
     box.style.transform = "scale(1.2)";
     setTimeout(() => { box.style.transform = "scale(1)"; }, 200);
 
-    fetch(`https://api.counterapi.dev/v1/${COUNTER_NS}/${COUNTER_KEY}/up`).catch(()=>{});
+    // 3. Gửi lệnh cộng lên server với chế độ keepalive (vẫn chạy dù đóng tab)
+    fetch(`https://api.counterapi.dev/v1/${COUNTER_NS}/${COUNTER_KEY}/up`, {
+      mode: 'cors',
+      keepalive: true 
+    }).catch(()=>{});
     
+    // 4. Tải ảnh
     const link = document.createElement('a');
     link.download = 'Thong-diep-Dai-Hoi-XIV.jpg';
     link.href = canvas.toDataURL('image/jpeg', 1.0);
