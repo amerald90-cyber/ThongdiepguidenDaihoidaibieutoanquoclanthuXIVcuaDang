@@ -85,20 +85,18 @@
   </div>
 </div>
 
+<!-- Giữ nguyên phần HTML bên trên, chỉ thay đổi phần <script> -->
 <script>
+  // THAY LINK APP SCRIPT CỦA BẠN VÀO ĐÂY
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4WbJVmN875SAOzFRMX8kb39FE8wXVwqeGheKWGfvHSgEqYY7YN0jLQzZYCjX2XX3L/exec"; 
+
   const DRIVE_ID = "1i30MYF682b8hZvTh7hzVSPQ4lHFdvzn3";
   const BACKGROUND_URL = "https://lh3.googleusercontent.com/d/" + DRIVE_ID;
   
-  // NAMESPACE MỚI - ĐẢM BẢO KHÔNG TRÙNG
-  const COUNTER_NS = "hanhtrinhsovietnam-xiv-official-2025"; 
-  const COUNTER_KEY = "global-count";
-  const START_NUM = 100;
-
   const BASE = {
     avatar: { x: 476, y: 440 }, 
     name:   { x: 365, y: 720, color: "#ffff00", font: "bold 26px Roboto" }, 
     unit:   { x: 365, y: 752, color: "#ffffff", font: "italic 21px Roboto" }, 
-    // Đã chỉnh y từ 795 lùi lên 780 cho cân đối
     loc:    { x: 365, y: 780, color: "#ffffff", font: "italic 21px Roboto" }, 
     msg:    { x: 770, y: 350, color: "#002a5c", fontFace: "Dancing Script" } 
   };
@@ -111,22 +109,35 @@
   let userAvatar = new Image();
   let isAvatarLoaded = false;
 
-  // LẤY THỐNG KÊ
-  async function loadStats() {
+  // LẤY THỐNG KÊ TỪ GOOGLE SHEET
+ async function loadStats() {
     try {
-      const res = await fetch(`https://api.counterapi.dev/v1/${COUNTER_NS}/${COUNTER_KEY}?t=${Date.now()}`);
-      if (res.ok) {
-        const data = await res.json();
-        const serverCount = (data.count || 0) + START_NUM;
-        // Nếu số server lớn hơn số lưu cục bộ thì lấy số server
-        const localCount = parseInt(localStorage.getItem('my_count') || 0);
-        const finalCount = Math.max(serverCount, localCount);
-        document.getElementById('userCount').innerText = finalCount.toLocaleString();
+      const res = await fetch(SCRIPT_URL);
+      const count = await res.text();
+      let num = parseInt(count);
+      
+      // Nếu kết quả trả về không phải số, dùng số mặc định
+      if (isNaN(num)) {
+        document.getElementById('userCount').innerText = "100";
+      } else {
+        document.getElementById('userCount').innerText = num.toLocaleString();
       }
     } catch(e) { 
-      const localCount = parseInt(localStorage.getItem('my_count') || START_NUM);
-      document.getElementById('userCount').innerText = localCount;
+      console.log("Lỗi tải stats:", e);
+      document.getElementById('userCount').innerText = "100";
     }
+  }
+
+  // TĂNG SỐ LÊN GOOGLE SHEET KHI TẢI ẢNH
+  async function incrementStats() {
+    try {
+      // Cập nhật UI ngay lập tức cho mượt
+      let currentUI = parseInt(document.getElementById('userCount').innerText.replace(/,/g, ''));
+      document.getElementById('userCount').innerText = (currentUI + 1).toLocaleString();
+      
+      // Gửi lệnh lên Sheet
+      await fetch(SCRIPT_URL + "?action=increment", { mode: 'no-cors' });
+    } catch(e) { console.log(e); }
   }
 
   loadStats();
@@ -203,26 +214,16 @@
     context.fillText(line, x, y);
   }
 
-  // TẢI ẢNH VÀ CỘNG SỐ (BAO GỒM LƯU TRỮ CỤC BỘ)
   function downloadImage() {
-    // 1. Nhảy số trên UI và lưu vào máy mình ngay
-    let currentUI = parseInt(document.getElementById('userCount').innerText.replace(/,/g, ''));
-    currentUI++;
-    document.getElementById('userCount').innerText = currentUI.toLocaleString();
-    localStorage.setItem('my_count', currentUI); // Lưu vào bộ nhớ trình duyệt
+    // Tăng số trên Google Sheet
+    incrementStats();
 
-    // 2. Hiệu ứng nháy
+    // Hiệu ứng nháy
     const box = document.getElementById('statsContainer');
     box.style.transform = "scale(1.2)";
     setTimeout(() => { box.style.transform = "scale(1)"; }, 200);
-
-    // 3. Gửi lệnh cộng lên server với chế độ keepalive (vẫn chạy dù đóng tab)
-    fetch(`https://api.counterapi.dev/v1/${COUNTER_NS}/${COUNTER_KEY}/up`, {
-      mode: 'cors',
-      keepalive: true 
-    }).catch(()=>{});
     
-    // 4. Tải ảnh
+    // Tải ảnh
     const link = document.createElement('a');
     link.download = 'Thong-diep-Dai-Hoi-XIV.jpg';
     link.href = canvas.toDataURL('image/jpeg', 1.0);
