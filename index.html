@@ -15,13 +15,11 @@
     .container-fluid { max-width: 1400px; padding-top: 20px; }
     
     .card-control { border: none; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); background: #fff; height: 100%; }
-    /* Đổi sang màu đỏ cho hợp không khí Đại Hội */
     .header-box { background: linear-gradient(to right, #d32f2f, #ff5252); color: white; padding: 15px; border-radius: 12px 12px 0 0; text-align: center; font-weight: bold; text-transform: uppercase; }
     
     .group-label { font-size: 0.9rem; font-weight: 700; color: #d63384; text-transform: uppercase; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
     .label-sm { font-size: 0.85rem; font-weight: 600; color: #333; margin-bottom: 4px; display: block;}
     
-    /* SLIDER */
     input[type=range] { -webkit-appearance: none; width: 100%; height: 8px; background: #e0e0e0; border-radius: 5px; outline: none; margin-bottom: 15px; cursor: pointer; }
     input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #d32f2f; box-shadow: 0 0 4px rgba(0,0,0,0.3); cursor: pointer; transition: transform 0.1s; }
     
@@ -30,6 +28,24 @@
     
     .btn-save { background-color: #d32f2f; color: white; font-weight: bold; padding: 14px; border-radius: 8px; width: 100%; border: none; margin-top: 15px; font-size: 1.1rem; transition: 0.3s; }
     .btn-save:hover { background-color: #b71c1c; transform: translateY(-2px); }
+
+    /* STYLE CHO THỐNG KÊ GÓC PHẢI */
+    .stats-mini {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 10px 15px;
+      border-radius: 50px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      z-index: 1000;
+      border: 1px solid #d32f2f;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .stats-mini b { color: #d32f2f; font-size: 1rem; }
 
     #loading { position: fixed; top:0; left:0; width:100%; height:100%; background: #fff; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
   </style>
@@ -41,9 +57,14 @@
   <p class="mt-2 fw-bold text-danger">Đang tải phôi ảnh Đại Hội...</p>
 </div>
 
+<!-- THỐNG KÊ NHỎ GÓC PHẢI -->
+<div class="stats-mini">
+  <i class="bi bi-megaphone-fill text-danger"></i>
+  <span>Đã có <b id="userCount">...</b> lượt tạo thông điệp</span>
+</div>
+
 <div class="container-fluid mb-5">
   <div class="row h-100">
-    <!-- CỘT ĐIỀU KHIỂN -->
     <div class="col-lg-4 mb-4">
       <div class="card-control">
         <div class="header-box"><i class="bi bi-gear-fill"></i> Cấu Hình Thông điệp</div>
@@ -57,6 +78,7 @@
              </div>
              <input type="text" class="form-control mb-2" id="inpName" placeholder="Họ và tên (In hoa)">
              <input type="text" class="form-control mb-2" id="inpUnit" placeholder="Chức vụ / Đơn vị">
+             <input type="text" class="form-control mb-2" id="inpLoc" placeholder="Xã/Phường - Tỉnh/Thành phố">
              <textarea class="form-control" id="inpMessage" rows="3" placeholder="Thông điệp cá nhân...">Tự hào vững bước dưới cờ Đảng quang vinh</textarea>
           </div>
 
@@ -68,7 +90,7 @@
           </div>
 
           <div class="mb-4 bg-light p-3 rounded border">
-             <div class="group-label text-danger">3. Căn chỉnh Tên & Đơn vị</div>
+             <div class="group-label text-danger">3. Căn chỉnh Tên/Đơn vị/Địa phương</div>
              <label class="label-sm">Di chuyển dọc:</label><input type="range" id="textY" min="-200" max="200" value="0">
           </div>
 
@@ -86,7 +108,6 @@
       </div>
     </div>
 
-    <!-- CỘT PREVIEW -->
     <div class="col-lg-8 text-center">
        <h5 class="text-muted mb-2">Xem trước kết quả</h5>
        <img id="previewImg" src="" alt="Đang tải dữ liệu...">
@@ -96,27 +117,39 @@
 </div>
 
 <script>
-  // ID ẢNH MỚI BẠN CUNG CẤP
-  const DRIVE_ID = "1Os6KoqYLGqjG6sZwpPONSnp8_qWkiwW3";
+  const DRIVE_ID = "1i30MYF682b8hZvTh7hzVSPQ4lHFdvzn3";
   const BACKGROUND_URL = "https://lh3.googleusercontent.com/d/" + DRIVE_ID;
 
-  // TỌA ĐỘ ĐÃ CĂN CHỈNH CHO MẪU ĐẠI HỘI XIV
+  // Cấu hình Counter API (Lưu số lượt tạo)
+  const COUNTER_NS = "dai-hoi-xiv-thong-diep";
+  const COUNTER_KEY = "official-count";
+  const START_NUM = 100; // Bắt đầu từ 100 người
+
   const BASE = {
-    avatar: { x: 476, y: 440 }, // Tâm hình tròn bên trái
-    name:   { x: 365, y: 728, color: "#d60000", font: "bold 26px Roboto" }, // Ô vát trắng dưới ảnh
-    unit:   { x: 365, y: 765, color: "#000000", font: "italic 20px Roboto" },
-    msg:    { x: 770, y: 350, color: "#002a5c", fontFace: "Dancing Script" }  // Ô chữ nhật bên phải
+    avatar: { x: 476, y: 440 }, 
+    name:   { x: 375, y: 720, color: "#ffff00", font: "bold 26px Roboto" }, 
+    unit:   { x: 365, y: 750, color: "#ffffff", font: "italic 20px Roboto" }, 
+    loc:    { x: 365, y: 775, color: "#ffffff", font: "italic 20px Roboto" }, 
+    msg:    { x: 770, y: 350, color: "#002a5c", fontFace: "Dancing Script" } 
   };
 
   const canvas = document.getElementById('myCanvas');
   const ctx = canvas.getContext('2d');
   const previewImg = document.getElementById('previewImg');
-
   let bgImage = new Image();
   bgImage.crossOrigin = "Anonymous"; 
-  
   let userAvatar = new Image();
   let isAvatarLoaded = false;
+
+  // Lấy thống kê khi tải trang
+  async function loadStats() {
+    try {
+      const res = await fetch(`https://api.counterapi.dev/v1/${COUNTER_NS}/${COUNTER_KEY}`);
+      const data = await res.json();
+      document.getElementById('userCount').innerText = (data.count + START_NUM).toLocaleString();
+    } catch(e) { document.getElementById('userCount').innerText = START_NUM; }
+  }
+  loadStats();
 
   bgImage.onload = () => {
     canvas.width = bgImage.width;
@@ -124,17 +157,9 @@
     drawCanvas();
     document.getElementById('loading').style.display = 'none';
   };
-  
-  bgImage.onerror = () => {
-    alert("Không tải được ảnh nền. Vui lòng kiểm tra quyền chia sẻ của ảnh trên Drive (Bất kỳ ai có liên kết đều có thể xem).");
-  };
-  
   bgImage.src = BACKGROUND_URL;
 
-  // Xử lý sự kiện thay đổi Input
-  document.querySelectorAll('input, textarea').forEach(el => {
-    el.addEventListener('input', drawCanvas);
-  });
+  document.querySelectorAll('input, textarea').forEach(el => el.addEventListener('input', drawCanvas));
 
   document.getElementById('uploadAvatar').addEventListener('change', function(e) {
     const file = e.target.files[0];
@@ -150,86 +175,69 @@
 
   function drawCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // 1. Vẽ Ảnh cá nhân (Nằm dưới cùng)
     if (isAvatarLoaded) {
       ctx.save();
       const avtX = parseInt(document.getElementById('avtX').value);
       const avtY = parseInt(document.getElementById('avtY').value);
       const scale = parseFloat(document.getElementById('avtScale').value);
-      
-      const baseSize = 420; // Kích thước khung tròn
+      const baseSize = 420; 
       const ratio = Math.max(baseSize / userAvatar.width, baseSize / userAvatar.height) * scale;
       const w = userAvatar.width * ratio;
       const h = userAvatar.height * ratio;
-      
       ctx.drawImage(userAvatar, BASE.avatar.x + avtX - w/2, BASE.avatar.y + avtY - h/2, w, h);
       ctx.restore();
     }
-
-    // 2. Vẽ Ảnh nền (Đè lên trên)
-    if (bgImage.complete) {
-        ctx.drawImage(bgImage, 0, 0);
-    }
-
-    // 3. Vẽ Chữ
+    if (bgImage.complete) { ctx.drawImage(bgImage, 0, 0); }
     drawTextOverlay();
-
-    // Cập nhật Preview
-    try {
-        previewImg.src = canvas.toDataURL('image/jpeg', 0.9);
-    } catch (e) {
-        console.error("CORS Error:", e);
-    }
+    previewImg.src = canvas.toDataURL('image/jpeg', 0.9);
   }
 
   function drawTextOverlay() {
     const name = document.getElementById('inpName').value;
     const unit = document.getElementById('inpUnit').value;
+    const loc = document.getElementById('inpLoc').value;
     const msg = document.getElementById('inpMessage').value;
-    
     const textY = parseInt(document.getElementById('textY').value);
     const msgY = parseInt(document.getElementById('msgY').value);
     const msgSize = parseInt(document.getElementById('msgSize').value);
     const msgWidth = parseInt(document.getElementById('msgWidth').value);
 
-    // Vẽ Tên & Đơn vị (Căn giữa ô vát dưới)
     ctx.textAlign = "center";
-    ctx.fillStyle = BASE.name.color; 
-    ctx.font = BASE.name.font; 
+    ctx.fillStyle = BASE.name.color; ctx.font = BASE.name.font; 
     ctx.fillText(name.toUpperCase(), BASE.name.x, BASE.name.y + textY);
-
-    ctx.fillStyle = BASE.unit.color; 
-    ctx.font = BASE.unit.font;
+    ctx.fillStyle = BASE.unit.color; ctx.font = BASE.unit.font;
     ctx.fillText(unit, BASE.unit.x, BASE.unit.y + textY);
+    ctx.fillStyle = BASE.loc.color; ctx.font = BASE.loc.font;
+    ctx.fillText(loc, BASE.loc.x, BASE.loc.y + textY);
 
-    // Vẽ Thông điệp (Căn trái trong ô chữ nhật phải)
     ctx.textAlign = "left"; 
-    ctx.fillStyle = BASE.msg.color; 
-    ctx.font = `${msgSize}px "${BASE.msg.fontFace}"`; 
+    ctx.fillStyle = BASE.msg.color; ctx.font = `${msgSize}px "${BASE.msg.fontFace}"`; 
     wrapText(ctx, msg, BASE.msg.x, BASE.msg.y + msgY, msgWidth, msgSize * 1.4);
   }
 
   function wrapText(context, text, x, y, maxWidth, lineHeight) {
-    var words = text.split(' ');
-    var line = '';
+    var words = text.split(' '); var line = '';
     for(var n = 0; n < words.length; n++) {
       var testLine = line + words[n] + ' ';
       var metrics = context.measureText(testLine);
       if (metrics.width > maxWidth && n > 0) {
-        context.fillText(line, x, y);
-        line = words[n] + ' ';
-        y += lineHeight;
+        context.fillText(line, x, y); line = words[n] + ' '; y += lineHeight;
       } else { line = testLine; }
     }
     context.fillText(line, x, y);
   }
 
   function downloadImage() {
+    // Tăng số lượt tạo khi người dùng nhấn tải
+    fetch(`https://api.counterapi.dev/v1/${COUNTER_NS}/${COUNTER_KEY}/up`).catch(()=>{});
+    
     const link = document.createElement('a');
     link.download = 'Avatar-Dai-Hoi-XIV.jpg';
     link.href = canvas.toDataURL('image/jpeg', 1.0);
     link.click();
+    
+    // Cập nhật lại số hiển thị ngay lúc đó
+    setTimeout(loadStats, 1000);
   }
 </script>
 
