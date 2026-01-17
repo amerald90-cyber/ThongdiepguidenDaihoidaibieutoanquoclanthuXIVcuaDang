@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tạo thông điệp gửi Đại hội đại biểu toàn quốc lần thứ XIV của Đảng</title>
+  <title>Tạo thông điệp gửi Đại hội XIV</title>
   
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Roboto:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -21,8 +21,6 @@
     canvas { display: none; }
     #previewImg { width: 100%; border-radius: 8px; border: 2px solid #fff; box-shadow: 0 5px 20px rgba(0,0,0,0.15); display: block; margin: 0 auto; max-height: 80vh; object-fit: contain; }
     .btn-save { background-color: #d32f2f; color: white; font-weight: bold; padding: 14px; border-radius: 8px; width: 100%; border: none; margin-top: 15px; font-size: 1.1rem; }
-    
-    /* BẢNG THỐNG KÊ NHỎ */
     .stats-mini { position: fixed; bottom: 20px; right: 20px; background: white; padding: 12px 18px; border-radius: 50px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 1000; border: 2px solid #d32f2f; display: flex; align-items: center; gap: 10px; transition: all 0.3s; }
     .stats-mini b { color: #d32f2f; font-size: 1.2rem; }
     #loading { position: fixed; top:0; left:0; width:100%; height:100%; background: #fff; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -52,7 +50,7 @@
              <input type="text" class="form-control mb-2" id="inpName" placeholder="Họ và tên (In hoa)">
              <input type="text" class="form-control mb-2" id="inpUnit" placeholder="Chức vụ / Đơn vị">
              <input type="text" class="form-control mb-2" id="inpLoc" placeholder="Xã/Phường - Tỉnh/Thành phố">
-             <textarea class="form-control" id="inpMessage" rows="3" placeholder="Thông điệp cá nhân...">Tự hào vững bước dưới cờ Đảng quang vinh</textarea>
+             <textarea class="form-control" id="inpMessage" rows="5" placeholder="Thông điệp cá nhân...">Trong không khí hân hoan hướng về Đại hội lần thứ XIV của Đảng, tôi cảm nhận rõ niềm tin và kỳ vọng của nhân dân đối với sự lãnh đạo sáng suốt của Đảng. Đại hội không chỉ là sự kiện chính trị trọng đại, mà còn là dấu mốc khẳng định quyết tâm xây dựng đất nước phát triển bền vững, dân giàu, nước mạnh, dân chủ, công bằng, văn minh.</textarea>
           </div>
           <div class="mb-4 bg-light p-3 rounded border">
              <div class="group-label text-primary">2. Căn chỉnh ảnh cá nhân</div>
@@ -63,21 +61,21 @@
           <div class="mb-4 bg-light p-3 rounded border">
              <div class="group-label text-danger">3. Căn chỉnh Tên/Đơn vị/Địa phương</div>
              <label class="label-sm">Di chuyển dọc:</label><input type="range" id="textY" min="-200" max="200" value="0">
+             <label class="label-sm">Cỡ chữ Đơn vị/Địa phương:</label><input type="range" id="unitSize" min="10" max="40" value="21">
           </div>
           <div class="mb-3 bg-light p-3 rounded border">
-             <div class="group-label text-success">4. Căn chỉnh Thông điệp</div>
+             <div class="group-label text-success">4. Căn chỉnh Thông điệp (Căn đều Word)</div>
              <label class="label-sm">Lên / Xuống:</label><input type="range" id="msgY" min="-200" max="200" value="0">
-             <label class="label-sm">Cỡ chữ:</label><input type="range" id="msgSize" min="20" max="70" value="35">
-             <label class="label-sm">Độ rộng khung:</label><input type="range" id="msgWidth" min="300" max="1100" value="850">
+             <label class="label-sm">Cỡ chữ:</label><input type="range" id="msgSize" min="20" max="70" value="30">
+             <label class="label-sm">Độ rộng khung (Căn vuông):</label><input type="range" id="msgWidth" min="300" max="1100" value="850">
           </div>
           <button onclick="downloadImage()" class="btn-save shadow"><i class="bi bi-download"></i> TẢI ẢNH KẾT QUẢ</button>
         </div>
       </div>
     </div>
     <div class="col-lg-8 text-center">
-       <!-- Chữ đã được làm nhỏ lại ở dòng dưới này -->
        <h6 class="text-danger fw-bold mb-3" style="font-size: 0.9rem;">
-         <i class="bi bi-heart-fill me-1"></i> Cùng Hành trình số Việt Nam my love gửi thông điệp đến Đại hội đại biểu toàn quốc lần thứ XIV của Đảng
+         <i class="bi bi-heart-fill me-1"></i> Gửi thông điệp đến Đại hội đại biểu toàn quốc lần thứ XIV của Đảng
        </h6>
        <img id="previewImg" src="">
        <canvas id="myCanvas"></canvas>
@@ -85,19 +83,16 @@
   </div>
 </div>
 
-<!-- Giữ nguyên phần HTML bên trên, chỉ thay đổi phần <script> -->
 <script>
-  // THAY LINK APP SCRIPT CỦA BẠN VÀO ĐÂY
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4WbJVmN875SAOzFRMX8kb39FE8wXVwqeGheKWGfvHSgEqYY7YN0jLQzZYCjX2XX3L/exec"; 
-
   const DRIVE_ID = "1i30MYF682b8hZvTh7hzVSPQ4lHFdvzn3";
   const BACKGROUND_URL = "https://lh3.googleusercontent.com/d/" + DRIVE_ID;
   
   const BASE = {
     avatar: { x: 476, y: 440 }, 
     name:   { x: 365, y: 720, color: "#ffff00", font: "bold 26px Roboto" }, 
-    unit:   { x: 365, y: 752, color: "#ffffff", font: "italic 21px Roboto" }, 
-    loc:    { x: 365, y: 780, color: "#ffffff", font: "italic 21px Roboto" }, 
+    unit:   { x: 365, color: "#ffffff" }, 
+    loc:    { x: 365, color: "#ffffff" }, 
     msg:    { x: 770, y: 350, color: "#002a5c", fontFace: "Dancing Script" } 
   };
 
@@ -109,33 +104,18 @@
   let userAvatar = new Image();
   let isAvatarLoaded = false;
 
-  // LẤY THỐNG KÊ TỪ GOOGLE SHEET
- async function loadStats() {
+  async function loadStats() {
     try {
       const res = await fetch(SCRIPT_URL);
       const count = await res.text();
-      let num = parseInt(count);
-      
-      // Nếu kết quả trả về không phải số, dùng số mặc định
-      if (isNaN(num)) {
-        document.getElementById('userCount').innerText = "100";
-      } else {
-        document.getElementById('userCount').innerText = num.toLocaleString();
-      }
-    } catch(e) { 
-      console.log("Lỗi tải stats:", e);
-      document.getElementById('userCount').innerText = "100";
-    }
+      document.getElementById('userCount').innerText = isNaN(parseInt(count)) ? "100" : parseInt(count).toLocaleString();
+    } catch(e) { document.getElementById('userCount').innerText = "100"; }
   }
 
-  // TĂNG SỐ LÊN GOOGLE SHEET KHI TẢI ẢNH
   async function incrementStats() {
     try {
-      // Cập nhật UI ngay lập tức cho mượt
       let currentUI = parseInt(document.getElementById('userCount').innerText.replace(/,/g, ''));
       document.getElementById('userCount').innerText = (currentUI + 1).toLocaleString();
-      
-      // Gửi lệnh lên Sheet
       await fetch(SCRIPT_URL + "?action=increment", { mode: 'no-cors' });
     } catch(e) { console.log(e); }
   }
@@ -186,44 +166,80 @@
     const unit = document.getElementById('inpUnit').value || "";
     const loc = document.getElementById('inpLoc').value || "";
     const msg = document.getElementById('inpMessage').value || "";
+    
     const textY = parseInt(document.getElementById('textY').value);
+    const unitSize = parseInt(document.getElementById('unitSize').value);
     const msgY = parseInt(document.getElementById('msgY').value);
     const msgSize = parseInt(document.getElementById('msgSize').value);
     const msgWidth = parseInt(document.getElementById('msgWidth').value);
+
+    // Vẽ tên/đơn vị căn giữa
     ctx.textAlign = "center";
     ctx.fillStyle = BASE.name.color; ctx.font = BASE.name.font; 
     ctx.fillText(name, BASE.name.x, BASE.name.y + textY);
-    ctx.fillStyle = BASE.unit.color; ctx.font = BASE.unit.font;
-    ctx.fillText(unit, BASE.unit.x, BASE.unit.y + textY);
-    ctx.fillStyle = BASE.loc.color; ctx.font = BASE.loc.font;
-    ctx.fillText(loc, BASE.loc.x, BASE.loc.y + textY);
+
+    const unitY = BASE.name.y + textY + 32;
+    ctx.fillStyle = BASE.unit.color; ctx.font = `italic ${unitSize}px Roboto`;
+    ctx.fillText(unit, BASE.unit.x, unitY);
+
+    const locY = unitY + unitSize + 5;
+    ctx.fillStyle = BASE.loc.color; ctx.font = `italic ${unitSize}px Roboto`;
+    ctx.fillText(loc, BASE.loc.x, locY);
+
+    // Vẽ thông điệp CĂN ĐỀU (JUSTIFY)
     ctx.textAlign = "left"; 
-    ctx.fillStyle = BASE.msg.color; ctx.font = `${msgSize}px "${BASE.msg.fontFace}"`; 
-    wrapText(ctx, msg, BASE.msg.x, BASE.msg.y + msgY, msgWidth, msgSize * 1.4);
+    ctx.fillStyle = BASE.msg.color; 
+    ctx.font = `${msgSize}px "${BASE.msg.fontFace}"`; 
+    
+    // Gọi hàm căn đều
+    justifyText(ctx, msg, BASE.msg.x, BASE.msg.y + msgY, msgWidth, msgSize * 1.5);
   }
 
-  function wrapText(context, text, x, y, maxWidth, lineHeight) {
-    var words = text.split(' '); var line = '';
-    for(var n = 0; n < words.length; n++) {
-      var testLine = line + words[n] + ' ';
-      var metrics = context.measureText(testLine);
-      if (metrics.width > maxWidth && n > 0) {
-        context.fillText(line, x, y); line = words[n] + ' '; y += lineHeight;
-      } else { line = testLine; }
-    }
-    context.fillText(line, x, y);
+  // HÀM QUAN TRỌNG: Vẽ văn bản căn đều hai bên như Word
+  function justifyText(context, text, x, y, maxWidth, lineHeight) {
+    const words = text.split(' ');
+    let lines = [];
+    let currentLine = [];
+
+    // Chia văn bản thành các dòng
+    words.forEach(word => {
+      let testLine = [...currentLine, word].join(' ');
+      if (context.measureText(testLine).width > maxWidth && currentLine.length > 0) {
+        lines.push(currentLine);
+        currentLine = [word];
+      } else {
+        currentLine.push(word);
+      }
+    });
+    lines.push(currentLine); // Dòng cuối cùng
+
+    lines.forEach((lineWords, index) => {
+      const isLastLine = index === lines.length - 1;
+      const lineText = lineWords.join(' ');
+      
+      // Nếu là dòng cuối hoặc chỉ có 1 từ: Căn trái bình thường
+      if (isLastLine || lineWords.length === 1) {
+        context.fillText(lineText, x, y);
+      } else {
+        // Căn đều: Tính toán khoảng cách thêm vào giữa các từ
+        const totalWordsWidth = lineWords.reduce((sum, word) => sum + context.measureText(word).width, 0);
+        const extraSpace = (maxWidth - totalWordsWidth) / (lineWords.length - 1);
+        
+        let currentX = x;
+        lineWords.forEach((word, wordIndex) => {
+          context.fillText(word, currentX, y);
+          currentX += context.measureText(word).width + extraSpace;
+        });
+      }
+      y += lineHeight;
+    });
   }
 
   function downloadImage() {
-    // Tăng số trên Google Sheet
     incrementStats();
-
-    // Hiệu ứng nháy
     const box = document.getElementById('statsContainer');
     box.style.transform = "scale(1.2)";
     setTimeout(() => { box.style.transform = "scale(1)"; }, 200);
-    
-    // Tải ảnh
     const link = document.createElement('a');
     link.download = 'Thong-diep-Dai-Hoi-XIV.jpg';
     link.href = canvas.toDataURL('image/jpeg', 1.0);
