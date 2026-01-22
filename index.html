@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
   
   <style>
-    body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; }
+    body { background-color: #f4f7f9; font-family: 'Roboto', sans-serif; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
     .container-fluid { max-width: 1400px; padding-top: 20px; }
     .card-control { border: none; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); background: #fff; height: 100%; }
     .header-box { background: linear-gradient(to right, #d32f2f, #ff5252); color: white; padding: 15px; border-radius: 12px 12px 0 0; text-align: center; font-weight: bold; text-transform: uppercase; }
@@ -26,7 +26,7 @@
     #loading { position: fixed; top:0; left:0; width:100%; height:100%; background: #fff; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
   </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
 
 <div id="loading">
   <div class="spinner-border text-danger" role="status"></div>
@@ -84,6 +84,7 @@
 </div>
 
 <script>
+  // --- CODE LOGIC BAN ĐẦU (GIỮ NGUYÊN) ---
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4WbJVmN875SAOzFRMX8kb39FE8wXVwqeGheKWGfvHSgEqYY7YN0jLQzZYCjX2XX3L/exec"; 
   const DRIVE_ID = "1i30MYF682b8hZvTh7hzVSPQ4lHFdvzn3";
   const BACKGROUND_URL = "https://lh3.googleusercontent.com/d/" + DRIVE_ID;
@@ -166,42 +167,30 @@
     const unit = document.getElementById('inpUnit').value || "";
     const loc = document.getElementById('inpLoc').value || "";
     const msg = document.getElementById('inpMessage').value || "";
-    
     const textY = parseInt(document.getElementById('textY').value);
     const unitSize = parseInt(document.getElementById('unitSize').value);
     const msgY = parseInt(document.getElementById('msgY').value);
     const msgSize = parseInt(document.getElementById('msgSize').value);
     const msgWidth = parseInt(document.getElementById('msgWidth').value);
-
-    // Vẽ tên/đơn vị căn giữa
     ctx.textAlign = "center";
     ctx.fillStyle = BASE.name.color; ctx.font = BASE.name.font; 
     ctx.fillText(name, BASE.name.x, BASE.name.y + textY);
-
     const unitY = BASE.name.y + textY + 32;
     ctx.fillStyle = BASE.unit.color; ctx.font = `italic ${unitSize}px Roboto`;
     ctx.fillText(unit, BASE.unit.x, unitY);
-
     const locY = unitY + unitSize + 5;
     ctx.fillStyle = BASE.loc.color; ctx.font = `italic ${unitSize}px Roboto`;
     ctx.fillText(loc, BASE.loc.x, locY);
-
-    // Vẽ thông điệp CĂN ĐỀU (JUSTIFY)
     ctx.textAlign = "left"; 
     ctx.fillStyle = BASE.msg.color; 
     ctx.font = `${msgSize}px "${BASE.msg.fontFace}"`; 
-    
-    // Gọi hàm căn đều
     justifyText(ctx, msg, BASE.msg.x, BASE.msg.y + msgY, msgWidth, msgSize * 1.5);
   }
 
-  // HÀM QUAN TRỌNG: Vẽ văn bản căn đều hai bên như Word
   function justifyText(context, text, x, y, maxWidth, lineHeight) {
     const words = text.split(' ');
     let lines = [];
     let currentLine = [];
-
-    // Chia văn bản thành các dòng
     words.forEach(word => {
       let testLine = [...currentLine, word].join(' ');
       if (context.measureText(testLine).width > maxWidth && currentLine.length > 0) {
@@ -211,20 +200,15 @@
         currentLine.push(word);
       }
     });
-    lines.push(currentLine); // Dòng cuối cùng
-
+    lines.push(currentLine);
     lines.forEach((lineWords, index) => {
       const isLastLine = index === lines.length - 1;
       const lineText = lineWords.join(' ');
-      
-      // Nếu là dòng cuối hoặc chỉ có 1 từ: Căn trái bình thường
       if (isLastLine || lineWords.length === 1) {
         context.fillText(lineText, x, y);
       } else {
-        // Căn đều: Tính toán khoảng cách thêm vào giữa các từ
         const totalWordsWidth = lineWords.reduce((sum, word) => sum + context.measureText(word).width, 0);
         const extraSpace = (maxWidth - totalWordsWidth) / (lineWords.length - 1);
-        
         let currentX = x;
         lineWords.forEach((word, wordIndex) => {
           context.fillText(word, currentX, y);
@@ -237,14 +221,46 @@
 
   function downloadImage() {
     incrementStats();
-    const box = document.getElementById('statsContainer');
-    box.style.transform = "scale(1.2)";
-    setTimeout(() => { box.style.transform = "scale(1)"; }, 200);
     const link = document.createElement('a');
     link.download = 'Thong-diep-Dai-Hoi-XIV.jpg';
     link.href = canvas.toDataURL('image/jpeg', 1.0);
     link.click();
   }
+
+  // --- PHẦN BẢO MẬT CHỐNG F12 VÀ COPY CODE ---
+  
+  // 1. Chặn phím tắt (F12, Ctrl+U, Ctrl+Shift+I, Ctrl+S...)
+  document.onkeydown = function(e) {
+    if (e.keyCode == 123) { return false; } // Chặn F12
+    if (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) { return false; }
+    if (e.ctrlKey && (e.keyCode == 'U'.charCodeAt(0) || e.keyCode == 'S'.charCodeAt(0))) { return false; } // Chặn Ctrl+U và Ctrl+S
+  };
+
+  // 2. Chặn chuột phải (Đã thêm ở thẻ body nhưng thêm ở đây cho chắc)
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+  }, false);
+
+  // 3. Debugger trap - Gây khó khăn khi cố tình mở Console
+  (function() {
+    var _0x1234 = function() {
+      try {
+        (function b(i) {
+          if (('' + i / i).length !== 1 || i % 20 === 0) {
+            (function() {}).constructor('debugger')();
+          } else {
+            debugger;
+          }
+          b(++i);
+        })(0);
+      } catch (e) {
+        setTimeout(_0x1234, 1000);
+      }
+    };
+    // _0x1234(); // Kích hoạt nếu muốn cực đoan (Lưu ý: có thể làm trình duyệt báo lag)
+  })();
+
+  console.log("%cDừng lại! %cĐây là tính năng trình duyệt dành cho nhà phát triển. Việc sao chép code ở đây là vi phạm bản quyền.", "color: red; font-size: 30px; font-weight: bold;", "color: black; font-size: 16px;");
 </script>
 </body>
 </html>
